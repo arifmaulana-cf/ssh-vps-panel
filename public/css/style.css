@@ -1,0 +1,219 @@
+/* ==========================================================================
+   Komponen dasar: login screen, tombol, input, modal, toast.
+   Layout desktop ada di desktop.css. Warna semua dari token --t-* yang
+   didefinisikan themes.js, supaya tema berlaku di seluruh aplikasi.
+   ========================================================================== */
+
+:root {
+  /* nilai bawaan = tema Ubuntu; themes.js menimpanya saat boot */
+  --t-base: #1b1b1f;
+  --t-window: #242424;
+  --t-window-2: #303030;
+  --t-text: #deddda;
+  --t-text-dim: #9a9996;
+  --t-border: rgba(255, 255, 255, .1);
+  --t-accent: #e95420;
+  --t-accent-ink: #ffffff;
+  --t-danger: #e01b24;
+  --t-warn: #f5a623;
+  --t-shadow: rgba(0, 0, 0, .55);
+
+  --radius: 12px;
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --font: Ubuntu, "Ubuntu Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--t-base);
+  color: var(--t-text);
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+[hidden] { display: none !important; }
+
+/* ------------------------------- tombol & form ------------------------------ */
+.btn {
+  border: 1px solid var(--t-border);
+  background: var(--t-window-2);
+  color: var(--t-text);
+  padding: 8px 14px;
+  border-radius: var(--r-xs);
+  font: inherit;
+  cursor: pointer;
+  transition: filter .15s ease, background .15s ease;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.12); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--t-accent);
+  border-color: var(--t-accent);
+  color: var(--t-accent-ink);
+  font-weight: 600;
+}
+.btn-danger { background: transparent; border-color: var(--t-danger); color: var(--t-danger); }
+.btn-danger-solid { background: var(--t-danger); border-color: var(--t-danger); color: #fff; }
+.btn-ghost { background: transparent; }
+.btn-ghost:hover:not(:disabled) { background: color-mix(in srgb, var(--t-text) 8%, transparent); filter: none; }
+.btn-block { width: 100%; }
+.btn-xs { padding: 3px 9px; font-size: 12px; }
+.btn-icon { background: none; border: 0; color: var(--t-text-dim); font-size: 22px; line-height: 1; cursor: pointer; padding: 0 6px; }
+.mono { font-family: var(--mono); }
+.modal-narrow { max-width: 380px; }
+
+input[type=text], input[type=password], input[type=number], textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--t-border);
+  background: color-mix(in srgb, var(--t-base) 70%, transparent);
+  color: var(--t-text);
+  font: inherit;
+  outline: none;
+}
+input:focus, textarea:focus { border-color: var(--t-accent); }
+label { display: block; margin: 12px 0 6px; font-size: 12px; color: var(--t-text-dim); text-transform: uppercase; letter-spacing: .04em; }
+.check { display: flex; align-items: center; gap: 8px; text-transform: none; letter-spacing: 0; font-size: 13px; margin-top: 12px; }
+.check input { width: auto; }
+
+.input-group { display: flex; gap: 8px; }
+.input-group input { flex: 1; }
+.select-sm {
+  background: var(--t-window-2); color: var(--t-text);
+  border: 1px solid var(--t-border); border-radius: var(--r-xs); padding: 5px 8px; font: inherit;
+}
+
+.alert { margin-top: 12px; padding: 9px 12px; border-radius: var(--r-sm); font-size: 13px; white-space: pre-wrap; }
+.alert-error {
+  background: color-mix(in srgb, var(--t-danger) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--t-danger) 50%, transparent);
+  color: color-mix(in srgb, var(--t-danger) 45%, var(--t-text));
+}
+
+.muted { color: var(--t-text-dim); }
+
+/* ---------------------------------- login ---------------------------------- */
+.screen {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(165deg,
+    color-mix(in srgb, var(--t-accent) 14%, var(--t-window)) 0%,
+    var(--t-base) 62%,
+    color-mix(in srgb, var(--t-base) 70%, black) 100%);
+}
+.card {
+  background: var(--t-window);
+  border: 1px solid var(--t-border);
+  border-radius: var(--radius);
+  padding: 26px;
+  box-shadow: var(--t-shadow);
+}
+.auth-card { width: 100%; max-width: 360px; }
+.brand { font-weight: 700; font-size: 17px; display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+.brand-mark { color: var(--t-accent); font-size: 20px; }
+.auth-card .btn-primary { margin-top: 18px; }
+
+/* ---------------------------------- modal ---------------------------------- */
+.modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 980; padding: 20px; }
+.modal-backdrop { position: absolute; inset: 0; background: color-mix(in srgb, var(--t-base) 78%, black); }
+.modal-card { position: relative; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 110px; gap: 12px; }
+
+/* ------------------------- form koneksi: preset & metode ------------------- */
+.preset-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.preset-hint { font-size: 11px; color: var(--t-text-dim); }
+.preset-chip {
+  font: inherit; font-size: 11px; cursor: pointer;
+  background: transparent; color: var(--t-text-dim);
+  border: 1px solid var(--t-border); border-radius: var(--r-xs);
+  padding: 2px 8px;
+}
+.preset-chip:hover { color: var(--t-text); border-color: color-mix(in srgb, var(--t-accent) 55%, transparent); }
+
+/* Segmented control: dua metode, hanya satu yang terlihat aktif. */
+.method-switch {
+  display: flex; gap: 2px; margin: 16px 0 4px; padding: 2px;
+  background: color-mix(in srgb, var(--t-base) 60%, transparent);
+  border: 1px solid var(--t-border); border-radius: var(--r-sm);
+}
+.method-btn {
+  flex: 1; font: inherit; font-size: 13px; cursor: pointer;
+  padding: 6px 10px; border: 0; border-radius: var(--r-xs);
+  background: transparent; color: var(--t-text-dim);
+}
+.method-btn.is-active { background: var(--t-window-2); color: var(--t-text); font-weight: 600; }
+
+.file-input { flex: 1; padding: 6px 8px; font-size: 12px; }
+.key-status { margin-top: 8px; font-size: 12px; min-height: 1em; }
+.key-status.is-ok { color: var(--t-ok); }
+.key-status.is-err { color: var(--t-danger); }
+.key-status.is-busy { color: var(--t-text-dim); }
+
+.key-paste { margin-top: 10px; }
+.key-paste summary { font-size: 12px; color: var(--t-text-dim); cursor: pointer; }
+.key-paste textarea {
+  margin-top: 8px; font-family: var(--mono); font-size: 11px; line-height: 1.45;
+  white-space: pre; overflow-x: auto;
+}
+.label-opt { text-transform: none; letter-spacing: 0; font-weight: 400; opacity: .8; }
+.key-actions { margin-top: 10px; display: flex; gap: 8px; }
+/* Peringatan jujur, bukan hiasan: mengunggah key memang punya risiko. */
+.key-warning {
+  margin: 12px 0 0; padding: 9px 11px;
+  font-size: 11.5px; line-height: 1.5; color: var(--t-text-dim);
+  border-left: 2px solid var(--t-warn);
+  background: color-mix(in srgb, var(--t-warn) 8%, transparent);
+}
+
+/* ------------------------------- pemilih tema ------------------------------ */
+.modal-wide { max-width: 560px; }
+.theme-intro { font-size: 12px; margin: 4px 0 16px; }
+.theme-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 8px; max-height: 56vh; overflow-y: auto; padding-right: 2px;
+}
+.theme-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  padding: 11px; text-align: left; cursor: pointer; font: inherit;
+  background: var(--t-window-2); color: var(--t-text);
+  border: 1px solid var(--t-border); border-radius: var(--r-sm);
+}
+.theme-card:hover { border-color: color-mix(in srgb, var(--t-accent) 55%, transparent); }
+.theme-card.is-active { border-color: var(--t-accent); background: color-mix(in srgb, var(--t-accent) 12%, var(--t-window-2)); }
+/* Swatch: empat petak warna asli tema, jadi terlihat sebelum diklik. */
+.theme-swatch {
+  display: flex; width: 100%; height: 26px;
+  border-radius: var(--r-xs); overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--t-text) 12%, transparent);
+}
+.theme-swatch i { flex: 1; }
+.theme-swatch i:first-child { flex: 1.6; }
+.theme-swatch i.is-accent { flex: .7; }
+.theme-name { font-size: 13px; font-weight: 600; }
+.theme-note { font-size: 11px; color: var(--t-text-dim); line-height: 1.4; }
+.theme-current { font-size: 10px; color: var(--t-accent); margin-top: auto; }
+
+/* ---------------------------------- toast ---------------------------------- */
+.toast {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  background: var(--t-window-2); border: 1px solid var(--t-border); color: var(--t-text);
+  padding: 10px 20px; border-radius: 999px; z-index: 995; font-size: 13px;
+  box-shadow: var(--t-shadow);
+}
+.toast-error { border-color: var(--t-danger); }
+.toast-warn { border-color: var(--t-warn); }
+
+@media (max-width: 560px) {
+  .modal-card { padding: 20px; }
+  .grid-2 { grid-template-columns: 1fr; }
+}

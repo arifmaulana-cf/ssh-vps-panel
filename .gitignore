@@ -1,0 +1,14 @@
+node_modules/
+.env
+
+# Data runtime. Semuanya berisi hal yang tidak boleh masuk repo:
+#   users.json       - hash bcrypt + metadata akun
+#   sessions.json    - id sesi web yang masih hidup
+#   known_hosts.json - sidik jari host yang sudah dipercaya
+# Kalau data/ dihapus, panel akan membuat ulang admin dari ADMIN_USER/ADMIN_PASS
+# di .env. Itu pulihkan akun PASSWORD LAMA, jadi jangan hapus users.json
+# sebagai cara "mulai bersih" - pakai menu Pengguna.
+data/
+
+*.log
+.DS_Store

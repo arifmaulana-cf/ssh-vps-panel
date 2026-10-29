@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSH VPS Panel</title>
+<link rel="stylesheet" href="/vendor/xterm/css/xterm.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/desktop.css">
+<!-- Skrip klasik sinkron: menerapkan tema tersimpan sebelum halaman
+     dirender, supaya tidak ada kedipan ke warna bawaan. -->
+<script src="/js/themes.js"></script>
+</head>
+<body>
+
+<!-- ============================== LOGIN ============================== -->
+<div id="login-screen" class="screen">
+  <form id="login-form" class="card auth-card" autocomplete="off">
+    <div class="brand"><span class="brand-mark">&#9635;</span> SSH VPS Panel</div>
+    <p class="muted">Masuk untuk mengelola server Anda.</p>
+
+    <label for="login-user">Username</label>
+    <input id="login-user" name="username" type="text" autocomplete="username" required>
+
+    <label for="login-pass">Password</label>
+    <input id="login-pass" name="password" type="password" autocomplete="current-password" required>
+
+    <div id="login-error" class="alert alert-error" hidden></div>
+    <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+  </form>
+</div>
+
+<!-- ============================== DESKTOP ============================== -->
+<div id="desktop" class="desktop" hidden>
+
+  <!-- Top bar ala GNOME -->
+  <header class="topbar">
+    <button id="btn-activities" class="topbar-btn" type="button" title="Activities (Super)">
+      <span class="activities-label">Activities</span>
+    </button>
+
+    <!-- Menu aplikasi (Berkas / Edit / Tampilan / Bantuan), diisi menubar.js
+         mengikuti jendela yang sedang terfokus. -->
+    <div id="topbar-menus" class="topbar-menus" hidden></div>
+
+    <div id="topbar-title" class="topbar-title"></div>
+
+    <div class="topbar-right">
+      <span class="sys-chip">
+        <span id="conn-status" class="dot dot-off"></span>
+        <span id="conn-label">Putus</span>
+      </span>
+      <select id="session-picker" class="session-picker" title="Sesi SSH aktif"></select>
+      <button id="btn-disconnect" class="topbar-icon" type="button" title="Putuskan koneksi SSH" aria-label="Putuskan koneksi SSH">
+        <span class="ti" data-icon="unplug"></span>
+      </button>
+      <span id="clock" class="topbar-clock" title="Kalender dan pengaturan cepat"></span>
+      <button id="btn-system" class="topbar-icon" type="button" title="Menu sistem" aria-label="Menu sistem">
+        <span class="ti" data-icon="gear"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Quick settings ala GNOME: diklik dari jam -->
+  <div id="quick-settings" class="quick-settings" hidden>
+    <div class="qs-head">
+      <div id="qs-datetime" class="qs-datetime"></div>
+      <div id="qs-day" class="muted"></div>
+    </div>
+
+    <div class="qs-section">
+      <div class="qs-label">Sesi SSH</div>
+      <div id="qs-sessions" class="qs-sessions"></div>
+    </div>
+
+    <div class="qs-sep"></div>
+
+    <div class="qs-grid">
+      <button id="qs-users" class="qs-tile" type="button" data-role="admin" hidden>
+        <span class="ti" data-icon="users"></span> Pengguna
+      </button>
+      <button id="qs-themes" class="qs-tile" type="button">
+        <span class="ti" data-icon="palette"></span> Tema
+      </button>
+      <button id="qs-disconnect" class="qs-tile" type="button">
+        <span class="ti" data-icon="unplug"></span> Putuskan
+      </button>
+      <button id="qs-logout" class="qs-tile is-danger" type="button">
+        <span class="ti" data-icon="power"></span> Keluar
+      </button>
+    </div>
+  </div>
+
+  <!-- Menu system (ala GNOME) -->
+  <!-- Menu sistem ala GNOME: pengaturan dan administrasi dulu, baru tindakan
+       yang mengubah keadaan (keluar, matikan). GNOME juga menaruh "Keluar" dan
+       "Matikan..." di bawah garis pemisah paling akhir supaya tidak tertukar
+       dengan hal biasa. -->
+  <div id="system-menu" class="system-menu" hidden>
+    <div class="system-head">
+      <div class="system-name" id="system-user">&nbsp;</div>
+      <div class="muted">
+        <span id="system-role"></span>
+        <span id="system-accounts" data-role="admin" hidden></span>
+      </div>
+    </div>
+
+    <div class="system-section">
+      <button id="menu-settings" class="system-item" type="button">
+        <span class="si-icon" data-icon="gear"></span> Pengaturan
+      </button>
+      <button id="btn-new-connection" class="system-item" type="button">
+        <span class="si-icon" data-icon="plus"></span> Koneksi baru
+      </button>
+      <button id="menu-disconnect" class="system-item" type="button">
+        <span class="si-icon" data-icon="unplug"></span> Putuskan sesi
+      </button>
+    </div>
+
+    <div class="system-sep"></div>
+
+    <div class="system-section">
+      <button id="menu-open-files" class="system-item" type="button">
+        <span class="si-icon" data-icon="folderOpen"></span> File Manager
+      </button>
+      <button id="menu-open-terminal" class="system-item" type="button">
+        <span class="si-icon" data-icon="terminal"></span> Terminal
+      </button>
+      <button id="menu-open-monitor" class="system-item" type="button">
+        <span class="si-icon" data-icon="sysmon"></span> System Monitor
+      </button>
+      <button id="menu-open-show-apps" class="system-item" type="button">
+        <span class="si-icon" data-icon="grid"></span> Tampilkan Aplikasi
+      </button>
+    </div>
+
+    <div class="system-sep"></div>
+
+    <div class="system-section" data-role="admin" hidden>
+      <button id="menu-users" class="system-item" type="button">
+        <span class="si-icon" data-icon="users"></span> Pengguna
+      </button>
+      <button id="menu-password" class="system-item" type="button">
+        <span class="si-icon" data-icon="save"></span> Ganti password saya
+      </button>
+    </div>
+    <div class="system-sep" data-role="admin" hidden></div>
+
+    <div class="system-section">
+      <button id="menu-themes" class="system-item" type="button">
+        <span class="si-icon" data-icon="palette"></span> Tema
+      </button>
+      <button id="menu-shortcuts" class="system-item" type="button">
+        <span class="si-icon" data-icon="unknown"></span> Pintasan Keyboard
+      </button>
+    </div>
+
+    <div class="system-sep"></div>
+
+    <div class="system-section">
+      <button id="menu-power" class="system-item" type="button">
+        <span class="si-icon" data-icon="power"></span> Matikan / Keluar&hellip;
+      </button>
+      <button id="menu-logout" class="system-item is-danger" type="button">
+        <span class="si-icon" data-icon="unplug"></span> Keluar
+      </button>
+    </div>
+  </div>
+
+  <!-- Dock ala Ubuntu -->
+  <nav id="dock" class="dock" aria-label="Dock aplikasi"></nav>
+
+  <!-- Area kerja: jendela-jendela mengambang di sini -->
+  <main id="workspace" class="workspace">
+    <!-- Scrim Activities berada DI DALAM workspace dengan z-index di bawah
+         jendela, supaya jendela yang di-scale benar-benar terlihat sebagai
+         pratinjau. Kalau di luar, ia menutupi jendela yang seharusnya
+         ditampilkan. -->
+    <div id="overview" class="overview" hidden>
+      <p id="overview-empty" class="overview-empty" hidden>
+        Tidak ada jendela terbuka. Buka aplikasi dari dock di kiri.
+      </p>
+    </div>
+
+    <!-- App grid: kumpulan aplikasi, terpisah dari overview jendela -->
+    <div id="appgrid" class="appgrid" hidden>
+      <input id="appgrid-search" class="appgrid-search" type="text" placeholder="Cari aplikasi"
+        autocomplete="off" spellcheck="false">
+      <div class="appgrid-body">
+        <nav id="appgrid-cats" class="appgrid-cats" aria-label="Kategori aplikasi"></nav>
+        <div id="appgrid-items" class="appgrid-items"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================== MODAL KONEKSI ============================== -->
+<div id="connect-modal" class="modal" hidden>
+  <div class="modal-backdrop"></div>
+  <form id="connect-form" class="card modal-card" autocomplete="off">
+    <div class="modal-head">
+      <h2>Koneksi SSH baru</h2>
+      <button type="button" class="btn-icon" id="btn-cancel-connect" aria-label="Tutup">&times;</button>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label for="c-host">Host / IP</label>
+        <input id="c-host" name="host" type="text" placeholder="203.0.113.10 atau vps.example.com" required>
+      </div>
+      <div>
+        <label for="c-port">Port</label>
+        <input id="c-port" name="port" type="number" value="22" min="1" max="65535" required>
+      </div>
+    </div>
+
+    <label for="c-username">Username</label>
+    <input id="c-username" name="username" type="text" value="root" required>
+    <div class="preset-row" role="group" aria-label="Preset username">
+      <span class="preset-hint">Preset AWS:</span>
+      <button class="preset-chip" type="button" data-username="ubuntu">ubuntu</button>
+      <button class="preset-chip" type="button" data-username="ec2-user">ec2-user</button>
+      <button class="preset-chip" type="button" data-username="admin">admin</button>
+      <button class="preset-chip" type="button" data-username="root">root</button>
+    </div>
+
+    <!-- Pilihan metode autentikasi -->
+    <div class="method-switch" role="radiogroup" aria-label="Metode autentikasi">
+      <button id="m-password" class="method-btn is-active" type="button" role="radio" aria-checked="true">
+        Password
+      </button>
+      <button id="m-key" class="method-btn" type="button" role="radio" aria-checked="false">
+        Private key
+      </button>
+    </div>
+
+    <!-- Metode password -->
+    <div id="pane-password">
+      <label for="c-password">Password</label>
+      <div class="input-group">
+        <input id="c-password" name="password" type="password">
+        <button id="toggle-pass" class="btn btn-ghost" type="button" tabindex="-1">lihat</button>
+      </div>
+    </div>
+
+    <!-- Metode private key -->
+    <div id="pane-key" hidden>
+      <label for="c-keyfile">Private key</label>
+      <div class="input-group">
+        <input id="c-keyfile" type="file" class="file-input">
+        <button id="c-key-clear" class="btn btn-ghost btn-xs" type="button">Hapus</button>
+      </div>
+      <div class="key-status" id="key-status"></div>
+
+      <details class="key-paste">
+        <summary>atau tempel isi key</summary>
+        <textarea id="c-key" rows="4" spellcheck="false"
+          placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;..."></textarea>
+      </details>
+
+      <label for="c-passphrase">Passphrase <span class="label-opt">opsional, hanya untuk key terenkripsi</span></label>
+      <input id="c-passphrase" type="password" autocomplete="off" placeholder="kosongkan bila key tidak terenkripsi">
+
+      <div class="key-actions">
+        <button id="c-key-check" class="btn btn-ghost btn-xs" type="button">Periksa key</button>
+      </div>
+
+      <p class="key-warning">
+        Key ini dikirim ke server panel untuk dipakai sekali, lalu dibuang.
+        Panel tidak menyimpannya di disk maupun di browser. Karena itu pakai
+        hanya di panel yang Anda percaya, dan lebih baik di belakang HTTPS.
+      </p>
+    </div>
+
+    <label class="check">
+      <input id="c-remember" type="checkbox"> <span>Simpan host di browser ini (tanpa kredensial)</span>
+    </label>
+
+    <div id="connect-error" class="alert alert-error" hidden></div>
+
+    <div class="modal-foot">
+      <button type="button" id="btn-cancel-connect-2" class="btn btn-ghost">Batal</button>
+      <button type="submit" id="connect-submit" class="btn btn-primary">Hubungkan</button>
+    </div>
+  </form>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<!-- ============================== PEMILIH TEMA ============================== -->
+<div id="theme-modal" class="modal" hidden>
+  <div class="modal-backdrop"></div>
+  <div class="card modal-card modal-wide">
+    <div class="modal-head">
+      <h2>Tema</h2>
+      <button type="button" class="btn-icon" id="btn-close-themes" aria-label="Tutup">&times;</button>
+    </div>
+    <p class="muted theme-intro">
+      Shell tetap GNOME di semua tema; yang berubah hanya paletnya.
+      Setiap tema memakai warna asli dari proyeknya, termasuk terminal.
+    </p>
+    <div id="theme-grid" class="theme-grid"></div>
+  </div>
+</div>
+
+<script src="/vendor/xterm/lib/xterm.js"></script>
+<script src="/vendor/xterm-addon-fit/addon-fit.js"></script>
+<script type="module" src="/js/desktop.js"></script>
+</body>
+</html>
